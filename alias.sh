@@ -1,0 +1,1 @@
+echo "alias grun='java -cp .:./gen_java:/usr/local/lib/antlr-4.13.2-complete.jar org.antlr.v4.gui.TestRig'" >> ~/.bash_aliases

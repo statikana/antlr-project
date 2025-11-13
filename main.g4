@@ -13,13 +13,13 @@ assignment  : ID assigner expression;
 
 // anything that returns a value
 expression
-    : expression POWER expression                           # PowerExpr
-    | expression (MUL | DIV | FLOOR_DIV | MOD) expression   # MulDivExpr
-    | expression (ADD | SUB) expression                     # AddSubExpr
+    : <assoc=right> lhs=expression op=POW                       rhs=expression  # ArithmeticExpr
+    |               lhs=expression op=(MUL | DIV | FLD | MOD)   rhs=expression  # ArithmeticExpr
+    |               lhs=expression op=(ADD | SUB)               rhs=expression  # ArithmeticExpr
     
-    | expression comparer expression                        # ComparisonExpr
+    |               lhs=expression comparer                     rhs=expression  # ComparisonExpr
     
-    | atom                                                  # AtomExpr
+    | atom                                                                      # AtomExpr
     ;
 
 
@@ -37,8 +37,8 @@ assigner    : ASSIGN_EQ
             | ASSIGN_MUL
             | ASSIGN_DIV
             | ASSIGN_MOD
-            | ASSIGN_FLOOR_DIV
-            | ASSIGN_POWER;
+            | ASSIGN_FLD
+            | ASSIGN_POW;
 
 //
 // LEXER RULES
@@ -57,7 +57,7 @@ REPEAT_NEWLINE
 
 fragment ALPHA   : [a-zA-Z_];
 fragment DIGIT   : [0-9];
-NUMBER           : '-'? DIGIT+ ('.' DIGIT+)?;
+NUMBER           : ('-'? DIGIT+ ('.' DIGIT*)?) | ('-'? '.' DIGIT+);
 ID               : ALPHA (DIGIT|ALPHA)* ;
 
 fragment STRING_CONTENT: (.)*?;
@@ -83,8 +83,8 @@ SUB         : '-' ;
 MUL         : '*' ;
 DIV         : '/' ;
 MOD         : '%' ;
-FLOOR_DIV   : '//' ;
-POWER       : '**' ;
+FLD         : '//' ;
+POW         : '**' ;
 
 
 // assignments
@@ -94,8 +94,8 @@ ASSIGN_SUB      : '-=';
 ASSIGN_MUL      : '*=';
 ASSIGN_DIV      : '/=';
 ASSIGN_MOD      : '%=';
-ASSIGN_FLOOR_DIV: '//=';
-ASSIGN_POWER    : '**=';
+ASSIGN_FLD      : '//=';
+ASSIGN_POW      : '**=';
 
 // these rules only catch things not caught by comments etc.
 NEWLINE
