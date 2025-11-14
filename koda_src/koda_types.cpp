@@ -12,18 +12,21 @@ class Type {
         virtual std::string get_name() const = 0;
 };
 
+// std::monostate: 1
 class VoidType : public Type {
     public:
         TypeKind get_kind() const override { return TypeKind::VOID; }
         std::string get_name() const override { return "void"; }
 };
 
+// bool: 1
 class BoolType : public Type {
     public:
         TypeKind get_kind() const override { return TypeKind::BOOL; }
         std::string get_name() const override { return "boolean"; }
 };
 
+// long int
 class IntType : public Type {
     public:
         TypeKind get_kind() const override { return TypeKind::INT; }
@@ -50,7 +53,7 @@ class StructType : public Type {
     public:
         TypeKind get_kind() const override { return TypeKind::STRUCT; }
         std::string get_name() const override { return name; }
-        
+
         std::string name;
         std::map<std::string, std::shared_ptr<Type>> field_types;
         // methods...

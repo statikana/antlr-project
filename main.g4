@@ -84,7 +84,7 @@ SUB         : '-' ;
 MUL         : '*' ;
 DIV         : '/' ;
 MOD         : '%' ;
-FLD         : '//' ;
+FLD         : '\\' ;
 POW         : '**' ;
 
 BW_OR       : '|';
@@ -93,7 +93,6 @@ BW_XOR      : '^';
 BW_LSHIFT   : '<<';
 BW_RSHIFT   : '>>';
 BW_NOT      : '~';
-
 
 ASSIGNMENT  : '=';
 

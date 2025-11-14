@@ -1,11 +1,15 @@
 #pragma once
-#include "_add.cpp"
-#include "_sub.cpp"
-#include "_mul.cpp"
-#include "_div.cpp"
+#include "digit/add.cpp"
+#include "digit/sub.cpp"
+#include "digit/mul.cpp"
+#include "digit/div.cpp"
+#include "digit/mod.cpp"
+#include "digit/fld.cpp"
 
 
 Instance infer_arithmetic(const Instance& lhs, std::string str_op, const Instance& rhs) {
+
+    // digit
     if (str_op == "+") {
         AddVisitor visitor(rhs);
         return std::visit(visitor, lhs.data);
@@ -18,6 +22,12 @@ Instance infer_arithmetic(const Instance& lhs, std::string str_op, const Instanc
     } else if (str_op == "/") {
         DivVisitor visitor(rhs);
         return std::visit(visitor, lhs.data);;
+    } else if (str_op == "%") {
+        ModVisitor visitor(rhs);
+        return std::visit(visitor, lhs.data);
+    } else if (str_op == "\\") {
+        FldVisitor visitor(rhs);
+        return std::visit(visitor, lhs.data);
     }
     throw "unexpected operation";
 }
