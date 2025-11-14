@@ -23,7 +23,8 @@ target_link_libraries(antlr-program PRIVATE
 
 # tell program where to find generated headers
 # and ANTLR runtime headers
-target_include_directories(antlr-program PRIVATE
+target_include_directories(
+    antlr-program PRIVATE
     ./gen_cpp
-    ./antlr4-cpp-runtime/include
+    ./antlr4-cpp-runtime/runtime/src
 )

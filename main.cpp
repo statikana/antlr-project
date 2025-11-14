@@ -1,16 +1,7 @@
-#include <algorithm>
-#include <fstream>
-#include <iostream>
-#include <iterator>
-#include <memory>
-#include <sstream>
-#include <string>
-#include <vector>
-
 #include "antlr4-runtime.h"
-#include "gen_cpp/mainBaseVisitor.h"
-#include "gen_cpp/mainLexer.h"
-#include "gen_cpp/mainParser.h"
+#include "gen_cpp/KodaBaseVisitor.h"
+#include "gen_cpp/KodaLexer.h"
+#include "gen_cpp/KodaParser.h"
 
 #include "koda_src/arithmetic/execute.cpp"
 #include "koda_src/koda_scope.cpp"
@@ -21,14 +12,14 @@ using namespace antlr4;
 typedef antlr4::tree::ParseTree Node;
 typedef antlr4::tree::TerminalNode Atom; // every terminal node is an atom
 
-class KodaVisitor : public mainBaseVisitor {
+class MainKodaVisitor : public KodaBaseVisitor {
 
     // for now, only use one scope.
     // will create scope manager later?
     Scope scope = Scope();
 
   public:
-    std::any visitAssignment(mainParser::AssignmentContext *ctx) override {
+    std::any visitAssignment(KodaParser::AssignmentContext *ctx) override {
         std::string id = ctx->ID()->getText();
         std::string operation;
         if (ctx->op == nullptr) {
@@ -58,7 +49,7 @@ class KodaVisitor : public mainBaseVisitor {
     // EXPRESSIONS
     // Expressions and Atoms always return an Instance wrapped in std::any
     std::any
-    visitArithmeticExpr(mainParser::ArithmeticExprContext *ctx) override {
+    visitArithmeticExpr(KodaParser::ArithmeticExprContext *ctx) override {
 
         Instance lhs = std::any_cast<Instance>(visit(ctx->lhs));
         Instance rhs = std::any_cast<Instance>(visit(ctx->rhs));
@@ -68,7 +59,7 @@ class KodaVisitor : public mainBaseVisitor {
         return infer_arithmetic(lhs, op_str, rhs);
     }
 
-    std::any visitBitwiseExpr(mainParser::BitwiseExprContext *ctx) override {
+    std::any visitBitwiseExpr(KodaParser::BitwiseExprContext *ctx) override {
         Instance lhs = std::any_cast<Instance>(visit(ctx->lhs));
         Instance rhs = std::any_cast<Instance>(visit(ctx->rhs));
         std::string op_str = ctx->op->getText();
@@ -77,7 +68,7 @@ class KodaVisitor : public mainBaseVisitor {
     }
 
     std::any
-    visitComparisonExpr(mainParser::ComparisonExprContext *ctx) override {
+    visitComparisonExpr(KodaParser::ComparisonExprContext *ctx) override {
         Instance lhs = std::any_cast<Instance>(visit(ctx->lhs));
         Instance rhs = std::any_cast<Instance>(visit(ctx->rhs));
         std::string op_str = ctx->op->getText();
@@ -85,21 +76,26 @@ class KodaVisitor : public mainBaseVisitor {
         throw "not implemented";
     }
 
-    std::any visitAtomExpr(mainParser::AtomExprContext *ctx) override {
+    std::any visitAtomExpr(KodaParser::AtomExprContext *ctx) override {
         return visit(ctx->atom());
     }
 
     // ATOMS
     // Atoms always directly return an Instance wrapped in std::any
 
-    std::any visitBooleanAtom(mainParser::BooleanAtomContext *ctx) override {
+    std::any
+    visitParenthesesAtom(KodaParser::ParenthesesAtomContext *ctx) override {
+        return visit(ctx->expression());
+    }
+
+    std::any visitBooleanAtom(KodaParser::BooleanAtomContext *ctx) override {
         std::string text = ctx->getText();
         if (text == "true") {
             return Instance::new_bool(true);
         }
         return Instance::new_bool(false);
     }
-    std::any visitNumberAtom(mainParser::NumberAtomContext *ctx) override {
+    std::any visitNumberAtom(KodaParser::NumberAtomContext *ctx) override {
         std::string text = ctx->NUMBER()->getText();
         if (text.find(".") == std::string::npos) {
             return std::any(Instance::new_int(stoi(text)));
@@ -108,14 +104,7 @@ class KodaVisitor : public mainBaseVisitor {
         }
     }
 
-    std::any visitStringAtom(mainParser::StringAtomContext *ctx) override {
-        std::string text = ctx->STRING()->getText();
-        text.erase(0, 1);
-        text.erase(text.size() - 1);
-        return std::any(Instance::new_string(text));
-    }
-
-    std::any visitIDAtom(mainParser::IDAtomContext *ctx) override {
+    std::any visitIDAtom(KodaParser::IDAtomContext *ctx) override {
         std::string id = ctx->ID()->getText();
 
         if (!scope.is_defined(id)) {
@@ -125,9 +114,43 @@ class KodaVisitor : public mainBaseVisitor {
         return std::any(scope[id]);
     }
 
-    std::any
-    visitParenthesesAtom(mainParser::ParenthesesAtomContext *ctx) override {
-        return visit(ctx->expression());
+    std::any visitStringAtom(KodaParser::StringAtomContext *ctx) override {
+        std::string text = ctx->STRING()->getText();
+        text.erase(0, 1);
+        text.erase(text.size() - 1);
+        return std::any(Instance::new_string(text));
+    }
+
+    std::any visitArrayAtom(KodaParser::ArrayAtomContext *ctx) override {
+
+        // includes token nodes for ','
+        Node* internals = ctx->array_inside();
+
+        std::vector<Node*> value_nodes;
+
+        std::copy_if(
+            internals->children.begin(),
+            internals->children.end(),
+            std::back_inserter(value_nodes),
+            [](Node* v) {
+                return v->getTreeType() == tree::ParseTreeType::RULE;
+            }
+        );
+
+        // evaulated: holds the visited evaluations of expressions in value_nodes
+        // should be same size
+        ArrayData evaluated;    
+        evaluated.reserve(value_nodes.size());
+
+        // evaluated.size() is still 0 here, but there is memory for it to expand
+        // into up to value_nodes.size()
+        for (int i=0; i<value_nodes.size(); i++) {
+            Instance result = std::any_cast<Instance>(visit(value_nodes[i]));
+            std::shared_ptr<Instance> instance_ptr = std::make_shared<Instance>(std::move(result));
+            evaluated.push_back(instance_ptr);
+        }
+
+        return Instance::new_array(evaluated);
     }
 };
 
@@ -144,15 +167,15 @@ int main(int argc, const char *argv[]) {
         return 1;
     }
     ANTLRInputStream input(input_file);
-    mainLexer lexer(&input);
+    KodaLexer lexer(&input);
     CommonTokenStream tokens(&lexer);
-    mainParser parser(&tokens);
-    mainParser::ProgramContext *tree = parser.program();
+    KodaParser parser(&tokens);
+    KodaParser::ProgramContext *tree = parser.program();
 
-    KodaVisitor visitor = KodaVisitor();
+    MainKodaVisitor visitor = MainKodaVisitor();
 
     visitor.visit(tree);
 
     std::cout << "Parse complete." << std::endl;
     return 0;
-};
+};  

@@ -4,10 +4,10 @@
 # rm -rf ./gen_cpp/*
 
 # generate cpp target code
-java -jar /usr/local/lib/antlr-4.13.2-complete.jar -Dlanguage=Cpp -o ./gen_cpp/ -visitor ./main.g4
+java -jar /usr/local/lib/antlr-4.13.2-complete.jar -Dlanguage=Cpp -o ./gen_cpp/ -visitor ./Koda.g4
 echo "C++ Generated"
 
 # only need to cmake once
-# cmake -S . -B ./build
+cmake -S . -B ./build
 
-make --directory=./build
+make --directory=./build -j$(nproc)

@@ -18,9 +18,10 @@ rm antlr4-cpp-runtime-4.13.2-source.zip
 mkdir gen_cpp/          # for actually running the grammar
 mkdir gen_java/         # for testrig debugging
 
-touch main.g4           # antlr grammar file
+touch Koda.g4           # antlr grammar file
+touch KodaTokens.g4
 touch main.cpp          # tree walkers
-touch test_file.txt     # input file
+touch input.txt     # input file
 
 # run.sh:   generate lexer & parser grammar files in ./gen_cpp
 # alias.sh: make an alias grun='java -cp .:./gen_java:/usr/local/lib/antlr-4.13.2-complete.jar org.antlr.v4.gui.TestRig]'
