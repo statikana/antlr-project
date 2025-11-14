@@ -3,3 +3,8 @@ a = "ok cool";
 b = 4.5 - .1 + 1;
 a += b;
 a += "2! " + a;
+
+x = true;
+y = false;
+x + y;
+z += x * y;

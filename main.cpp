@@ -13,9 +13,9 @@
 #include "gen_cpp/mainParser.h"
 #include "gen_cpp/mainBaseVisitor.h"
 
-#include "koda_src/koda_scope.cpp"
-#include "koda_src/arithmetic.cpp"
 #include "koda_src/koda_values.cpp"
+#include "koda_src/koda_scope.cpp"
+#include "koda_src/arithmetic/execute.cpp"
 
 using namespace antlr4;
 
@@ -29,25 +29,27 @@ class KodaVisitor : public mainBaseVisitor {
     Scope scope = Scope();
 
     public:
-        std::any visitAssignment(mainParser::AssignmentContext* ctx) {
+        std::any visitAssignment(mainParser::AssignmentContext* ctx) override {
             std::string id = ctx->ID()->getText();
-            std::string op_text = ctx->assigner()->getText();
+            std::string operation;
+            if (ctx->op == nullptr) {
+                operation = "";
+            } else {
+                operation = ctx->op->getText();
+            }
 
             std::any rhs_any = visit(ctx->expression());
             Instance rhs = std::any_cast<Instance>(rhs_any);
             
-            
-            // Assignment rules
-            if (op_text.compare("=") == 0) {
+
+            // no operation, just assign
+            if (operation.empty()) {
                 scope.define(id, rhs);
             } else {
                 if (!scope.is_defined(id)) {
                     throw "Undefined name " + id;
                 }
-                // a += 2   ->   a = a + 2
-
-                op_text.erase(op_text.length()-1, 1);
-                Instance new_value = infer_arithmetic(scope[id], op_text, rhs);
+                Instance new_value = infer_arithmetic(scope[id], operation, rhs);
                 scope.define(id, new_value);
             }
 
@@ -58,28 +60,48 @@ class KodaVisitor : public mainBaseVisitor {
 
         // EXPRESSIONS
         // Expressions and Atoms always return an Instance wrapped in std::any
-        std::any visitArithmeticExpr(mainParser::ArithmeticExprContext* ctx) {
+        std::any visitArithmeticExpr(mainParser::ArithmeticExprContext* ctx) override {
 
-            std::any lhs_any = visit(ctx->lhs);
-            Instance lhs = std::any_cast<Instance>(lhs_any);
+            Instance lhs = std::any_cast<Instance>(visit(ctx->lhs));
+            Instance rhs = std::any_cast<Instance>(visit(ctx->rhs));
 
             std::string op_str= ctx->op->getText();
 
-            std::any rhs_any = visit(ctx->rhs);
-            Instance rhs = std::any_cast<Instance>(rhs_any);
 
             return infer_arithmetic(lhs, op_str, rhs);
         }
 
-        // comparison exprs go here <----
+        std::any visitBitwiseExpr(mainParser::BitwiseExprContext* ctx) override {
+            Instance lhs = std::any_cast<Instance>(visit(ctx->lhs));
+            Instance rhs = std::any_cast<Instance>(visit(ctx->rhs));
+            std::string op_str = ctx->op->getText();
 
-        std::any visitAtomExpr(mainParser::AtomExprContext* ctx) {
+            throw "not implemented";
+        }
+
+        std::any visitComparisonExpr(mainParser::ComparisonExprContext* ctx) override {
+            Instance lhs = std::any_cast<Instance>(visit(ctx->lhs));
+            Instance rhs = std::any_cast<Instance>(visit(ctx->rhs));
+            std::string op_str = ctx->op->getText();
+
+            throw "not implemented";
+        }
+
+        std::any visitAtomExpr(mainParser::AtomExprContext* ctx) override {
             return visit(ctx->atom());
         }
         
         // ATOMS
         // Atoms always directly return an Instance wrapped in std::any
-        std::any visitNumberAtom(mainParser::NumberAtomContext* ctx) {
+
+        std::any visitBooleanAtom(mainParser::BooleanAtomContext* ctx) override {
+            std::string text = ctx->getText();
+            if (text.compare("true") == 0) {
+                return Instance::new_bool(true);
+            }
+            return Instance::new_bool(false);
+        }
+        std::any visitNumberAtom(mainParser::NumberAtomContext* ctx) override {
             std::string text = ctx->NUMBER()->getText();
             if (text.find(".") == std::string::npos) {
                 return std::any(Instance::new_int(stoi(text)));
@@ -88,14 +110,14 @@ class KodaVisitor : public mainBaseVisitor {
             }
         }
 
-        std::any visitStringAtom(mainParser::StringAtomContext* ctx) {
+        std::any visitStringAtom(mainParser::StringAtomContext* ctx) override {
             std::string text = ctx->STRING()->getText();
             text.erase(0, 1);
             text.erase(text.size() - 1);
             return std::any(Instance::new_string(text));
         }
 
-        std::any visitIDAtom(mainParser::IDAtomContext* ctx) {
+        std::any visitIDAtom(mainParser::IDAtomContext* ctx)override {
             std::string id = ctx->ID()->getText();
 
             if (!scope.is_defined(id)) {
@@ -105,7 +127,7 @@ class KodaVisitor : public mainBaseVisitor {
             return std::any(scope[id]);
         }
 
-        std::any visitParenthesesAtom(mainParser::ParenthesesAtomContext* ctx) {
+        std::any visitParenthesesAtom(mainParser::ParenthesesAtomContext* ctx) override {
             return visit(ctx->expression());
         }
 
@@ -137,4 +159,4 @@ int main(int argc, const char* argv[]) {
 
     std::cout << "Parse complete." << std::endl;
     return 0;
-}
+};

@@ -1,10 +1,9 @@
 #pragma once
-
 #include <string>
 
 
 enum TypeKind {
-    VOID, BOOL, INT, FLOAT, STRING,
+    VOID, BOOL, INT, FLOAT, STRING, ARRAY, STRUCT
 };
 
 class Type {
@@ -41,4 +40,18 @@ class StringType : public Type {
     public:
         TypeKind get_kind() const override { return TypeKind::STRING; }
         std::string get_name() const override { return "string"; }
+};
+class ArrayType : public Type {
+    public:
+        TypeKind get_kind() const override { return TypeKind::ARRAY; }
+        std::string get_name() const override { return "array"; }
+};
+class StructType : public Type {
+    public:
+        TypeKind get_kind() const override { return TypeKind::STRUCT; }
+        std::string get_name() const override { return name; }
+        
+        std::string name;
+        std::map<std::string, std::shared_ptr<Type>> field_types;
+        // methods...
 };
