@@ -1,26 +1,30 @@
 #pragma once
-#include <map>
+#include "./types/object.h"
+#include <iostream>
+#include <string>
+#include <unordered_map>
 #include <vector>
 
-#include "koda_values.cpp"
+typedef std::unordered_map<std::string, Object> ObjMap;
 
-typedef std::map<std::string, Instance> InstanceMap;
-
+// represents a scope for variable definitions
+// in the future, will expand to support nested scopes
+// currently basically a wrapper around an unordered_map
 class Scope {
 	private:
-	InstanceMap map;
+	ObjMap map;
 
 	public:
 	Scope() {}
 
-	Instance& operator[](std::string name) {
+	Object& operator[](std::string name) {
 		if (!is_defined(name)) {
 			throw name + " not defined. Use .define";
 		}
 		return map.at(name);
 	}
 
-	void define(std::string name, const Instance& value) { map.insert_or_assign(name, value); }
+	void define(std::string name, const Object& value) { map.insert_or_assign(name, value); }
 
 	bool is_defined(std::string name) { return map.count(name) != 0; }
 
@@ -39,7 +43,7 @@ class Scope {
 			std::cout << "Defintion " << std::to_string(counter) << ":" << std::endl;
 			std::cout << "  Name:  '" << vals.first << "'" << std::endl;
 			std::cout << "  Value: " << vals.second.to_text() << std::endl;
-			std::cout << "  Type:  '" << vals.second.type->get_name() << "'";
+			std::cout << "  Type:  '" << typeid(vals.second).name() << "'";
 			std::cout << std::endl << std::endl;
 			counter++;
 		}
