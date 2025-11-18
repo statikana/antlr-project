@@ -1,30 +1,30 @@
 #pragma once
-#include "./types/object.h"
+#include "./typing/atom.h"
 #include <iostream>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
-typedef std::unordered_map<std::string, Object> ObjMap;
+typedef std::unordered_map<std::string, Atom> Map;
 
 // represents a scope for variable definitions
 // in the future, will expand to support nested scopes
 // currently basically a wrapper around an unordered_map
 class Scope {
 	private:
-	ObjMap map;
+	Map map;
 
 	public:
 	Scope() {}
 
-	Object& operator[](std::string name) {
+	Atom& operator[](std::string name) {
 		if (!is_defined(name)) {
 			throw name + " not defined. Use .define";
 		}
 		return map.at(name);
 	}
 
-	void define(std::string name, const Object& value) { map.insert_or_assign(name, value); }
+	void define(std::string name, const Atom& value) { map.insert_or_assign(name, value); }
 
 	bool is_defined(std::string name) { return map.count(name) != 0; }
 
@@ -40,9 +40,9 @@ class Scope {
 		std::cout << "Current Scope:" << std::endl;
 		int counter = 1;
 		for (const auto& vals: map) {
-			std::cout << "Defintion " << std::to_string(counter) << ":" << std::endl;
+			std::cout << "Defintion " << counter << ":" << std::endl;
 			std::cout << "  Name:  '" << vals.first << "'" << std::endl;
-			std::cout << "  Value: " << vals.second.to_text() << std::endl;
+			std::cout << "  Value: " << get_to_text(vals.second) << std::endl;
 			std::cout << "  Type:  '" << typeid(vals.second).name() << "'";
 			std::cout << std::endl << std::endl;
 			counter++;

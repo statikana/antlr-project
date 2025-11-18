@@ -1,70 +1,66 @@
 grammar Koda;
 import KodaTokens;
 
+// program: series of statements
 program		: statement* EOF;
 
-statement	: assignment ENDLINE | expression ENDLINE;
+// statement: assignment, expression, or definition
+statement	: (assignment | expression | definition) ENDLINE;
 
+// block: enter a new scope
 block		: '{' (block | statement)* '}';
-assignment	: ID op = operator? ASSIGNMENT expression;
+
+// assignment: id, operator, expression
+// assignment	: ID op = operator? ASSIGNMENT expression;
+assignment	: ID ASSIGNMENT expression;
 
 // anything that returns a value
 expression
+	// ARITHMETIC
 	: <assoc = right> lhs = expression op = ARITH_POW rhs = expression
 	# ArithmeticExpr
-
 	| lhs = expression op = (ARITH_MUL | ARITH_DIV | ARITH_FLD | ARITH_MOD) rhs = expression
 	# ArithmeticExpr
-
 	| lhs = expression op = (ARITH_ADD | ARITH_SUB) rhs = expression
 	# ArithmeticExpr
-
-	| lhs = expression op = bw_operator rhs = expression
-	# BitwiseExpr
-
-	| lhs = expression op = comparer rhs = expression
-	# ComparisonExpr
-
-	| op=singleton_operator expression
-	# SingletonOperatorExpr
+	
+	// in expression alternatives
+	| func_name=ID args=funcCallArgsList
+	# FunctionCall
 
 	| atom
 	# AtomExpr
 	;
 
+
+funcCallArgsList
+	: '(' (ID ID (',' ID ID)*)? ')'
+	;
+
+// smallest possible unit of value (core types)
 atom
 	: '(' expression ')'					# ParenthesesAtom
 	| BOOLEAN								# BooleanAtom
+
 	| NUMBER								# NumberAtom
 	| HEX									# HexAtom
 	| BIN									# BinaryAtom
+
 	| ID									# IDAtom
 	| STRING								# StringAtom
-	| ARRAY_ENTER array_inside ARRAY_CLOSE	# ArrayAtom
 	;
 
-array_inside: (expression ARRAY_SEP)* expression?;
-
-comparer	: COMP_GT | COMP_LT | COMP_GE | COMP_LE | COMP_EQ | COMP_NEQ; // | IS | ISNT;
-
-operator	: arith_operator | bw_operator;
-
-arith_operator
+operator
 	: ARITH_ADD | ARITH_SUB
 	| ARITH_MUL | ARITH_DIV
 	| ARITH_MOD | ARITH_FLD
 	| ARITH_POW
 	;
 
-bw_operator
-	: BW_AND
-	| BW_OR
-	| BW_XOR
-	| BW_LSH
-	| BW_RSH
+definition
+	: func_name=ID '(' params=funcDefParamsList ')' block
+	# FunctionDefinition
 	;
 
-singleton_operator
-	: LOGIC_NOT
-	| BW_NOT
-	;
+funcDefParamsList:
+	(ID ID ',')* (ID ID ','?)?;

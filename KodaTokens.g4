@@ -25,12 +25,12 @@ fragment STRING_CONTENT: (.)*?;
 STRING: '\'' STRING_CONTENT '\'' | '"' STRING_CONTENT '"';
 
 // comparisons
-COMP_GT      : '>';
-COMP_LT      : '<';
-COMP_GE      : '>=';
-COMP_LE      : '<=';
-COMP_EQ      : '==';
-COMP_NEQ     : '!=';
+// COMP_GT      : '>';
+// COMP_LT      : '<';
+// COMP_GE      : '>=';
+// COMP_LE      : '<=';
+// COMP_EQ      : '==';
+// COMP_NEQ     : '!=';
 // IS      : '===';
 // ISNT    : '!==';
 
@@ -45,25 +45,25 @@ ARITH_FLD     : '\\';
 ARITH_POW     : '**';
 
 
-// bitwise
-BW_OR       : '|';
-BW_AND      : '&';
-BW_XOR      : '^';
-BW_LSH      : '<<';
-BW_RSH      : '>>';
+// // bitwise
+// BW_OR       : '|';
+// BW_AND      : '&';
+// BW_XOR      : '^';
+// BW_LSH      : '<<';
+// BW_RSH      : '>>';
 
 // singleton operators
-LOGIC_NOT   : '!';
-BW_NOT      : '~';
+// LOGIC_NOT   : '!';
+// BW_NOT      : '~';
 
 
 ASSIGNMENT  : '=';
 
 
 // array rules
-ARRAY_ENTER : '[';
-ARRAY_CLOSE : ']';
-ARRAY_SEP   : ',';
+// ARRAY_ENTER : '[';
+// ARRAY_CLOSE : ']';
+// ARRAY_SEP   : ',';
 
 // these rules only catch things not caught by comments etc.
 NEWLINE : '\r'? '\n' -> skip;
