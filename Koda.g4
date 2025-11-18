@@ -58,7 +58,7 @@ operator
 	;
 
 definition
-	: func_name=ID '(' params=funcDefParamsList ')' block
+	: 'func ' func_name=ID '(' params=funcDefParamsList ')' '->' ret_t=ID block
 	# FunctionDefinition
 	;
 

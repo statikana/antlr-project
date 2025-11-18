@@ -40,10 +40,12 @@ class Scope {
 		std::cout << "Current Scope:" << std::endl;
 		int counter = 1;
 		for (const auto& vals: map) {
+			auto access = AtomAccess(vals.second);
 			std::cout << "Defintion " << counter << ":" << std::endl;
 			std::cout << "  Name:  '" << vals.first << "'" << std::endl;
-			std::cout << "  Value: " << get_to_text(vals.second) << std::endl;
-			std::cout << "  Type:  '" << typeid(vals.second).name() << "'";
+			std::cout << "  Text:  '" << access.get_text() << "'" << std::endl;
+			std::cout << "  Kind:   " << kind_to_string[access.get_kind()] << std::endl;
+			std::cout << "  Type:   " << type_kind_to_string[access.get_type()] << std::endl;
 			std::cout << std::endl << std::endl;
 			counter++;
 		}

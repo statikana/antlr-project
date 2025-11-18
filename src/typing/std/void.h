@@ -6,7 +6,8 @@
 
 class Void : public Object {
 	public:
-	TypeKind kind = VOID;
+	Kind kind = TYPE_KIND;
+	TypeKind type = VOID_TYPE;
 	Void() {}
 	std::string to_text() const override { return "void"; }
 };

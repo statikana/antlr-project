@@ -4,6 +4,7 @@
 #include "./std/bool.h"
 #include "./std/int64.h"
 #include "./std/void.h"
+#include "./std/func.h"
 
 #include <utility>
 #include <variant>
@@ -15,7 +16,7 @@ using std::vector;
 using std::visit;
 
 
-using Atom = std::variant<shared_ptr<Object>, shared_ptr<Bool>, shared_ptr<Void>, shared_ptr<Int64>>;
+using Atom = std::variant<shared_ptr<Object>, shared_ptr<Bool>, shared_ptr<Void>, shared_ptr<Int64>, shared_ptr<Func>>;
 
 // basic tree structure for resolving
 // inheritance order. each node has a type
@@ -71,30 +72,44 @@ struct TypeOrderNode {
 
 // creates the type order tree
 TypeOrderNode create_tree() {
-	auto root = TypeOrderNode(OBJECT);
-	root.add(INT64).add(BOOL);
-	root.add(VOID);
+	auto root = TypeOrderNode(OBJECT_TYPE);
+	root.add(INT64_TYPE).add(BOOL_TYPE);
+	root.add(VOID_TYPE);
 	return root;
 }
 
-TypeKind get_type(const Atom& object) {
-	return visit([](auto arg) { return arg->kind; }, object);
-}
 
-string get_to_text(const Atom& object) {
-	return visit([](auto arg) { return arg->to_text(); }, object);
-}
+// wraps lambda visitors for getting attributes
+// of every member of inner Atom
+class AtomAccess {
+    public:
+    const Atom& inner;
+    AtomAccess(const Atom& a) : inner(a) {}
+
+    TypeKind get_type() {
+	    return visit([](auto arg) { return arg->type; }, this->inner);
+    }
+
+    Kind get_kind() {
+	    return visit([](auto arg) { return arg->kind; }, this->inner);
+    }
+
+    string get_text() {
+        return visit([](auto arg) { return arg->to_text(); }, this->inner);
+    }
+};
+
 
 bool subtype(const TypeOrderNode& root, Atom& parent, const Atom& child) {
-	TypeKind parent_t = get_type(parent);
-	TypeKind child_t  = get_type(child);
+	auto parent_acc = AtomAccess(parent);
+	auto child_acc  = AtomAccess(child);
 
-	const TypeOrderNode* parent_node = root.find_node(parent_t);
+	const TypeOrderNode* parent_node = root.find_node(parent_acc.get_type());
 
 	// parent defined in tree?
 	if (parent_node == nullptr) {
 		return false;
 	}
 
-	return parent_node->contains(child_t);
+	return parent_node->contains(child_acc.get_type());
 }

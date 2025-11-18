@@ -10,7 +10,8 @@ class Bool : public Object {
 	bool state;
 
 	public:
-	TypeKind kind = BOOL;
+	Kind kind = TYPE_KIND;
+	TypeKind type = BOOL_TYPE;
 
 	Bool(bool value) : state(value) {}
 	bool getState() const { return state; }

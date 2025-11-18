@@ -1,2 +1,3 @@
-b = 0b001 << 10;
-k = (2 ** 10 == b);
+func foo(int bar) -> int {
+    bar + 3;
+};

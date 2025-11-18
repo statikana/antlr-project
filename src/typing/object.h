@@ -10,8 +10,8 @@
 // inherit from this
 class Object {
 	public:
-	Brand brand	  = TYPE;
-	TypeKind kind = OBJECT;
+	Kind kind = TYPE_KIND;
+	TypeKind type = OBJECT_TYPE;
 
 	virtual std::string to_text() const { return "object"; }
 };
