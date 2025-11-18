@@ -1,11 +1,10 @@
 #pragma once
-#include "./order.h"
 #include <memory>
 #include <stdexcept>
 #include <string>
 #include <variant>
 
-#include "./not_implemented.h"
+#include "./kind.h"
 
 // base object in type systems. all others should
 // inherit from this

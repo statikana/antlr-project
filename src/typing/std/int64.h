@@ -1,8 +1,8 @@
 #pragma once
-#include "../order.h"
-#include <cmath>
-#include <memory>
-#include <variant>
+#include <string>
+
+#include "../object.h"
+#include "../kind.h"
 
 using std::get_if;
 using std::make_shared;

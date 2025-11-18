@@ -1,6 +1,8 @@
 #pragma once
-#include "../order.h"
-#include <variant>
+#include <string>
+
+#include "../object.h"
+#include "../kind.h"
 
 class Void : public Object {
 	public:

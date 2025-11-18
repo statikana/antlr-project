@@ -47,6 +47,7 @@ class MainKodaVisitor : public KodaBaseVisitor {
 
 		// TODO: param unwrapping
 		// TODO: function definition
+		return nullptr;
 	}
 
 	//
@@ -57,7 +58,8 @@ class MainKodaVisitor : public KodaBaseVisitor {
 		Atom rhs = unwrap(visit(ctx->rhs));
 
 		// TODO: math inference
-		return wrap(Int64(42));
+		// return wrap(Int64(42));
+		return nullptr;
 	}
 
 	any visitFunctionCall(KodaParser::FunctionCallContext* ctx) override {
@@ -66,6 +68,7 @@ class MainKodaVisitor : public KodaBaseVisitor {
 
 		// TODO: arg unwrapping
 		// TODO: typing
+		return nullptr;
 	}
 };
 

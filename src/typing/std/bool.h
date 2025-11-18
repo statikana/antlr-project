@@ -1,8 +1,10 @@
 #pragma once
-#include "../order.h"
-#include <variant>
+#include <string>
 
-// simple boolean type
+#include "../object.h"
+#include "../kind.h"
+
+
 class Bool : public Object {
 	private:
 	bool state;
