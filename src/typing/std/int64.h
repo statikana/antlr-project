@@ -1,8 +1,8 @@
 #pragma once
 #include <string>
 
-#include "../object.h"
 #include "../kind.h"
+#include "../object.h"
 
 // 64-bit signed integer type
 class Int64 : public Object {
@@ -10,7 +10,7 @@ class Int64 : public Object {
 	int64_t value;
 
 	public:
-	Kind kind = TYPE_KIND;
+	Kind kind	  = TYPE_KIND;
 	TypeKind type = INT64_TYPE;
 
 	Int64(int64_t value) : value(value) {}

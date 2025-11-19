@@ -4,15 +4,11 @@ import KodaTokens;
 // program: series of statements
 program		: statement* EOF;
 
-// statement: assignment, expression, or definition
-statement	: (assignment | expression | definition) ENDLINE;
+// statement: expression or definition
+statement	: (expression | definition) ENDLINE;
 
 // block: enter a new scope
 block		: '{' (block | statement)* '}';
-
-// assignment: id, operator, expression
-// assignment	: ID op = operator? ASSIGNMENT expression;
-assignment	: ID ASSIGNMENT expression;
 
 // anything that returns a value
 expression
@@ -60,6 +56,9 @@ operator
 definition
 	: 'func ' func_name=ID '(' params=funcDefParamsList ')' '->' ret_t=ID block
 	# FunctionDefinition
+
+	| type=ID name=ID ASSIGNMENT expression
+	# VariableDefinition
 	;
 
 funcDefParamsList:

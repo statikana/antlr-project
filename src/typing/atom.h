@@ -1,10 +1,10 @@
 #pragma once
-#include "./object.h"
 #include "./kind.h"
+#include "./object.h"
 #include "./std/bool.h"
+#include "./std/func.h"
 #include "./std/int64.h"
 #include "./std/void.h"
-#include "./std/func.h"
 
 #include <utility>
 #include <variant>
@@ -14,7 +14,6 @@ using std::shared_ptr;
 using std::string;
 using std::vector;
 using std::visit;
-
 
 using Atom = std::variant<shared_ptr<Object>, shared_ptr<Bool>, shared_ptr<Void>, shared_ptr<Int64>, shared_ptr<Func>>;
 
@@ -46,9 +45,9 @@ struct TypeOrderNode {
 
 	// adds a subtype to this node's subtypes, with no subtypes
 	// of its own. Returns the created node.
-	TypeOrderNode add(const TypeKind& subtype) {
-		auto created = TypeOrderNode(subtype);
-		this->subtypes.push_back(&created);
+	TypeOrderNode* add(const TypeKind& subtype) {
+		auto created = new TypeOrderNode(subtype);
+		this->subtypes.push_back(created);
 		return created;
 	}
 
@@ -68,48 +67,52 @@ struct TypeOrderNode {
 
 		return nullptr;
 	}
+
+	std::string get_text(int indent=0) {
+		string out = "";
+		string prefix = "";
+		std::sort(
+			subtypes.begin(), subtypes.end(), 
+			[](const TypeOrderNode* a, const TypeOrderNode* b){return a->subtypes.size() < b->subtypes.size(); });
+		for (int i = 0; i < indent; i++) {
+			prefix.append(" ");
+		}
+		out.append(type_kind_to_string[this->type] + "\n");
+		for (auto child : subtypes) {
+			out.append(prefix + "  |-" + child->get_text(indent+4) + "\n");
+		}
+		out = out.substr(0, out.find_last_not_of("\n")+1);
+		return out;
+	}
 };
 
 // creates the type order tree
 TypeOrderNode create_tree() {
 	auto root = TypeOrderNode(OBJECT_TYPE);
-	root.add(INT64_TYPE).add(BOOL_TYPE);
+	root.add(INT64_TYPE)->add(BOOL_TYPE);
 	root.add(VOID_TYPE);
+	std::cout << root.get_text() << std::endl;
 	return root;
 }
-
 
 // wraps lambda visitors for getting attributes
 // of every member of inner Atom
 class AtomAccess {
-    public:
-    const Atom& inner;
-    AtomAccess(const Atom& a) : inner(a) {}
+	public:
+	const Atom& inner;
+	AtomAccess(const Atom& a) : inner(a) {}
 
-    TypeKind get_type() {
-	    return visit([](auto arg) { return arg->type; }, this->inner);
-    }
-
-    Kind get_kind() {
-	    return visit([](auto arg) { return arg->kind; }, this->inner);
-    }
-
-    string get_text() {
-        return visit([](auto arg) { return arg->to_text(); }, this->inner);
-    }
-};
-
-
-bool subtype(const TypeOrderNode& root, Atom& parent, const Atom& child) {
-	auto parent_acc = AtomAccess(parent);
-	auto child_acc  = AtomAccess(child);
-
-	const TypeOrderNode* parent_node = root.find_node(parent_acc.get_type());
-
-	// parent defined in tree?
-	if (parent_node == nullptr) {
-		return false;
+	TypeKind get_type() {
+		return visit([](auto arg) { return arg->type; }, this->inner);
 	}
 
-	return parent_node->contains(child_acc.get_type());
-}
+	Kind get_kind() {
+		return visit([](auto arg) { return arg->kind; }, this->inner);
+	}
+
+	string get_text() {
+		return visit([](auto arg) { return arg->to_text(); }, this->inner);
+	}
+};
+
+TypeOrderNode type_tree_root = create_tree();

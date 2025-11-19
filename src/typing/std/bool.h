@@ -1,16 +1,15 @@
 #pragma once
 #include <string>
 
-#include "../object.h"
 #include "../kind.h"
-
+#include "../object.h"
 
 class Bool : public Object {
 	private:
 	bool state;
 
 	public:
-	Kind kind = TYPE_KIND;
+	Kind kind	  = TYPE_KIND;
 	TypeKind type = BOOL_TYPE;
 
 	Bool(bool value) : state(value) {}
