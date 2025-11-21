@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <string>
 
 enum Kind { FUNCTION_KIND, TYPE_KIND };
 static std::map<Kind, std::string> kind_to_string = {{FUNCTION_KIND, "Function"}, {TYPE_KIND, "Type"}};
@@ -8,13 +9,40 @@ static std::map<Kind, std::string> kind_to_string = {{FUNCTION_KIND, "Function"}
 static std::map<std::string, Kind> string_to_kind = {{"Function", FUNCTION_KIND}, {"Type", TYPE_KIND}};
 
 // TYPE_KIND Kind must also implement TypeKind
-enum TypeKind { FUNCTION_TYPE, OBJECT_TYPE, BOOL_TYPE, VOID_TYPE, INT64_TYPE };
+enum TypeKind {
+	FUNCTION_TYPE,
+	OBJECT_TYPE,
+	BOOL_TYPE,
+	ARRAY_TYPE,
+	VOID_TYPE,
+	INT64_TYPE,
+	FLOAT_TYPE,
+	STRING_TYPE,
+	AUTO_TYPE
+};
 static std::map<std::string, TypeKind> string_to_type_kind = {
-	{"Object", OBJECT_TYPE}, {"bool", BOOL_TYPE}, {"void", VOID_TYPE}, {"int64", INT64_TYPE}, {"int", INT64_TYPE}};
+	{"Object", OBJECT_TYPE},
+	{"bool", BOOL_TYPE},
+	{"array", ARRAY_TYPE},
+	{"void", VOID_TYPE},
+	{"int64", INT64_TYPE},
+	{"int", INT64_TYPE},
+	{"float", FLOAT_TYPE},
+	{"string", STRING_TYPE},
+	{"Function", FUNCTION_TYPE},
+
+	// special
+	{"auto", AUTO_TYPE}};
 
 static std::map<TypeKind, std::string> type_kind_to_string = {
 	{OBJECT_TYPE, "Object"},
 	{BOOL_TYPE, "bool"},
 	{VOID_TYPE, "void"},
 	{INT64_TYPE, "int64"},
-	{FUNCTION_TYPE, "Function"}};
+	{FLOAT_TYPE, "float"},
+	{STRING_TYPE, "string"},
+	{ARRAY_TYPE, "array"},
+	{FUNCTION_TYPE, "Function"},
+
+	// special
+	{AUTO_TYPE, "auto"}};

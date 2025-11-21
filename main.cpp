@@ -1,12 +1,11 @@
 #include <iostream>
-#include "antlr4-runtime.h"
-#include "gen_cpp/KodaLexer.h"
-#include "gen_cpp/KodaParser.h"
 
 #include "src/ast/generate_ast.cpp"
+#include "src/exec/exec.cpp"
+
+#include <memory>
 
 using namespace antlr4;
-
 
 int main(int argc, const char* argv[]) {
 	if (argc < 2) {
@@ -21,8 +20,14 @@ int main(int argc, const char* argv[]) {
 		return 1;
 	}
 
-    generate_ast(input_file);
+	auto program = generate_ast(input_file);
+	std::cout << "... begin generated AST..." << std::endl;
+	std::cout << program->get_text() << std::endl;
+	std::cout << "... end generated AST..." << std::endl;
 
-	std::cout << "Parse complete." << std::endl;
+	Scope root = Scope();
+	auto r = exec(program, root);
+	std::cout << AtomVAccess(r).get_text() << std::endl;
+	root.print();
 	return 0;
 };

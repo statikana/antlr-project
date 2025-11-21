@@ -5,10 +5,15 @@ import KodaTokens;
 program		: statement* EOF;
 
 // statement: expression or definition
-statement	: (expression | definition) ENDLINE;
+statement	: (expression | definition | control_seq | block) ENDLINE;
 
-// block: enter a new scope
-block		: '{' (block | statement)* '}';
+block		: '{' statement* '}';
+
+control_seq
+	: 'if' '(' first_e=expression ')' block ('elif' '(' inter_e=expression ')' block)* ('else' last_e=block)?
+	#IfElseControlSeq
+	;
+
 
 // anything that returns a value
 expression
@@ -19,31 +24,37 @@ expression
 	# ArithmeticExpr
 	| lhs = expression op = (ARITH_ADD | ARITH_SUB) rhs = expression
 	# ArithmeticExpr
-	
-	// in expression alternatives
-	| func_name=ID args=funcCallArgsList
-	# FunctionCall
 
 	| atom
 	# AtomExpr
 	;
 
 
-funcCallArgsList
-	: '(' (ID ID (',' ID ID)*)? ')'
-	;
-
 // smallest possible unit of value (core types)
 atom
-	: '(' expression ')'					# ParenthesesAtom
-	| BOOLEAN								# BooleanAtom
+	: '(' expression ')'
+	# ParenthesesAtom
 
-	| NUMBER								# NumberAtom
-	| HEX									# HexAtom
-	| BIN									# BinaryAtom
+	| ID '(' (expression ',')* expression? ')'
+	# FuncCallAtom
 
-	| ID									# IDAtom
-	| STRING								# StringAtom
+	| '[' (expression ',')* expression? ']'
+	# ArrayAtom
+
+	| BOOLEAN
+	# BooleanAtom
+
+	| NUMBER
+	# NumberAtom
+
+	| VOID
+	# VoidAtom
+
+	| ID
+	# IDAtom
+
+	| STRING
+	# StringAtom
 	;
 
 operator
@@ -54,12 +65,15 @@ operator
 	;
 
 definition
-	: 'func ' func_name=ID '(' params=funcDefParamsList ')' '->' ret_t=ID block
-	# FunctionDefinition
+	: type=ID name=ID
+	# VarDef
 
 	| type=ID name=ID ASSIGNMENT expression
-	# VariableDefinition
-	;
+	# VarDefAndAssign
 
-funcDefParamsList:
-	(ID ID ',')* (ID ID ','?)?;
+	| name=ID ASSIGNMENT expression
+	# VarAssign
+
+	| 'func' name=ID '(' (ID ID ',')* (ID ID)? ')' '->' ret_type=ID block
+	# FuncDef
+	;

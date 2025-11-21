@@ -6,10 +6,12 @@ ONELINE_COMMENT: '//' ~[\r\n]* -> skip;
 
 REPEAT_NEWLINE  : [\r\n]+ REPEAT_NEWLINE -> skip;
 
+
 fragment ALPHA  : [a-zA-Z_];
 fragment DIGIT  : [0-9];
 
 BOOLEAN         : 'true' | 'false';
+VOID            : 'void';
 NUMBER          : ('-'? DIGIT+ ('.' DIGIT*)?) | ('-'? '.' DIGIT+);
 HEX             : HEX_PREFIX (DIGIT | [a-fA-F])+;
 BIN             : BINARY_PREFIX [01]+;
@@ -23,6 +25,14 @@ ID              : ALPHA (DIGIT | ALPHA)*;
 
 fragment STRING_CONTENT: (.)*?;
 STRING: '\'' STRING_CONTENT '\'' | '"' STRING_CONTENT '"';
+
+
+fragment ITEM: BOOLEAN | VOID | NUMBER | HEX | BIN | ID | STRING;
+
+fragment COMMA_SEP_ITEMS: (ITEM ',')* (ITEM ','?)?;
+
+
+ARRAY: '[' COMMA_SEP_ITEMS ']';
 
 // comparisons
 // COMP_GT      : '>';

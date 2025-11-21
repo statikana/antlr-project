@@ -14,7 +14,8 @@ class Int64 : public Object {
 	TypeKind type = INT64_TYPE;
 
 	Int64(int64_t value) : value(value) {}
-	int64_t getValue() const { return value; }
+	int64_t get_value() const { return value; }
 
-	std::string to_text() const override { return std::to_string(value); }
+	std::string get_text() const override { return std::to_string(value); }
+	bool get_truth() const override { return value != 0; }
 };

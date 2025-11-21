@@ -9,5 +9,6 @@ class Void : public Object {
 	Kind kind	  = TYPE_KIND;
 	TypeKind type = VOID_TYPE;
 	Void() {}
-	std::string to_text() const override { return "void"; }
+	std::string get_text() const override { return "void"; }
+	bool get_truth() const override { return false; }
 };

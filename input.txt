@@ -1,7 +1,3 @@
-func foo(bool bar) -> int {
-    int next = bar + 3;
-};
-
-func foo_jr(int bar) -> bool {
-    int next_jr = bar - 8;
+func foo(int k, string b) -> int {
+    string g = b + k;
 };

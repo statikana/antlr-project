@@ -2,10 +2,14 @@
 #include "./kind.h"
 #include "./object.h"
 #include "./std/bool.h"
+#include "./std/float.h"
 #include "./std/func.h"
 #include "./std/int64.h"
+#include "./std/string.h"
 #include "./std/void.h"
 
+#include <algorithm>
+#include <iostream>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -15,7 +19,14 @@ using std::string;
 using std::vector;
 using std::visit;
 
-using Atom = std::variant<shared_ptr<Object>, shared_ptr<Bool>, shared_ptr<Void>, shared_ptr<Int64>, shared_ptr<Func>>;
+using AtomV = std::variant<
+	shared_ptr<Object>,
+	shared_ptr<Bool>,
+	shared_ptr<Void>,
+	shared_ptr<Int64>,
+	shared_ptr<Float>,
+	shared_ptr<String>,
+	shared_ptr<Func>>;
 
 // basic tree structure for resolving
 // inheritance order. each node has a type
@@ -68,20 +79,20 @@ struct TypeOrderNode {
 		return nullptr;
 	}
 
-	std::string get_text(int indent=0) {
-		string out = "";
+	std::string get_text(int indent = 0) {
+		string out	  = "";
 		string prefix = "";
-		std::sort(
-			subtypes.begin(), subtypes.end(), 
-			[](const TypeOrderNode* a, const TypeOrderNode* b){return a->subtypes.size() < b->subtypes.size(); });
+		std::sort(subtypes.begin(), subtypes.end(), [](const TypeOrderNode* a, const TypeOrderNode* b) {
+			return a->subtypes.size() < b->subtypes.size();
+		});
 		for (int i = 0; i < indent; i++) {
 			prefix.append(" ");
 		}
 		out.append(type_kind_to_string[this->type] + "\n");
-		for (auto child : subtypes) {
-			out.append(prefix + "  |-" + child->get_text(indent+4) + "\n");
+		for (auto child: subtypes) {
+			out.append(prefix + "  |-" + child->get_text(indent + 4) + "\n");
 		}
-		out = out.substr(0, out.find_last_not_of("\n")+1);
+		out = out.substr(0, out.find_last_not_of("\n") + 1);
 		return out;
 	}
 };
@@ -89,29 +100,37 @@ struct TypeOrderNode {
 // creates the type order tree
 TypeOrderNode create_tree() {
 	auto root = TypeOrderNode(OBJECT_TYPE);
-	root.add(INT64_TYPE)->add(BOOL_TYPE);
+	root.add(FLOAT_TYPE)->add(INT64_TYPE)->add(BOOL_TYPE);
 	root.add(VOID_TYPE);
+	root.add(STRING_TYPE);
+	root.add(ARRAY_TYPE);
+	root.add(FUNCTION_TYPE);
+
 	std::cout << root.get_text() << std::endl;
 	return root;
 }
 
 // wraps lambda visitors for getting attributes
-// of every member of inner Atom
-class AtomAccess {
+// of every member of inner AtomV
+class AtomVAccess {
 	public:
-	const Atom& inner;
-	AtomAccess(const Atom& a) : inner(a) {}
+	const AtomV& inner;
+	AtomVAccess(const AtomV& a) : inner(a) {}
 
-	TypeKind get_type() {
+	TypeKind get_type() const {
 		return visit([](auto arg) { return arg->type; }, this->inner);
 	}
 
-	Kind get_kind() {
+	Kind get_kind() const {
 		return visit([](auto arg) { return arg->kind; }, this->inner);
 	}
 
-	string get_text() {
-		return visit([](auto arg) { return arg->to_text(); }, this->inner);
+	string get_text() const {
+		return visit([](auto arg) { return arg->get_text(); }, this->inner);
+	}
+
+	bool get_truth() const {
+		return visit([](auto arg) { return arg->get_truth(); }, this->inner);
 	}
 };
 

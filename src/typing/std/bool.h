@@ -13,7 +13,8 @@ class Bool : public Object {
 	TypeKind type = BOOL_TYPE;
 
 	Bool(bool value) : state(value) {}
-	bool getState() const { return state; }
+	bool get_state() const { return state; }
 
-	std::string to_text() const override { return state ? "true" : "false"; }
+	std::string get_text() const override { return state ? "true" : "false"; }
+	bool get_truth() const override { return state; }
 };

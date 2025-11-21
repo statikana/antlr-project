@@ -13,5 +13,6 @@ class Object {
 	Kind kind	  = TYPE_KIND;
 	TypeKind type = OBJECT_TYPE;
 
-	virtual std::string to_text() const { return "object"; }
+	virtual std::string get_text() const { return "object"; }
+	virtual bool get_truth() const { return true; }
 };
